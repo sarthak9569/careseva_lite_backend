@@ -77,6 +77,7 @@ async def seed_data():
     clinics = [
         {
             "clinicId": "CS-7K82P",
+            "clinicRefNum": "REF-78291",
             "name": "Arogya Care Clinic",
             "phone": "+91 98765 43210",
             "email": "arogya@careseva.org",
@@ -89,10 +90,13 @@ async def seed_data():
             "speciality": "General Medicine & Pediatrics",
             "operatingHours": "09:00 AM - 08:00 PM",
             "status": "approved",
+            "isBookingActive": True,
+            "isOpdActive": True,
             "createdAt": datetime.now(timezone.utc).isoformat()
         },
         {
             "clinicId": "CS-9M41X",
+            "clinicRefNum": "REF-94102",
             "name": "Sanjeevani Multispeciality",
             "phone": "+91 98123 45678",
             "email": "sanjeevani@careseva.org",
@@ -105,6 +109,8 @@ async def seed_data():
             "speciality": "Cardiology & Internal Medicine",
             "operatingHours": "10:00 AM - 07:00 PM",
             "status": "approved",
+            "isBookingActive": False,
+            "isOpdActive": False,
             "createdAt": datetime.now(timezone.utc).isoformat()
         }
     ]

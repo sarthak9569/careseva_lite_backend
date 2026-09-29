@@ -28,6 +28,7 @@ class ClinicApplicationBase(BaseModel):
     submittedAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     reviewedAt: Optional[datetime] = None
     assignedClinicId: Optional[str] = None
+    assignedClinicRefNum: Optional[str] = None
     rejectionReason: Optional[str] = None
 
 class ClinicApplicationCreate(BaseModel):

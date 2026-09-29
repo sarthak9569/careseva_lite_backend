@@ -56,10 +56,12 @@ async def approve_application(app_id: str):
         raise HTTPException(status_code=404, detail="Application not found")
 
     clinic_id = f"CS-{''.join(random.choices(string.ascii_uppercase + string.digits, k=5))}"
+    clinic_ref_num = f"REF-{''.join(random.choices(string.digits, k=5))}"
     doctor_id = f"DOC-{''.join(random.choices(string.ascii_uppercase + string.digits, k=5))}"
 
     clinic_data = {
         "clinicId": clinic_id,
+        "clinicRefNum": clinic_ref_num,
         "name": application["clinicName"],
         "phone": application["clinicPhone"],
         "email": application.get("email", ""),
@@ -72,6 +74,8 @@ async def approve_application(app_id: str):
         "speciality": application["speciality"],
         "operatingHours": application["operatingHours"],
         "status": ClinicStatus.APPROVED,
+        "isBookingActive": False,
+        "isOpdActive": False,
         "createdAt": datetime.now(timezone.utc).isoformat()
     }
     await db["clinics"].insert_one(clinic_data)
@@ -92,12 +96,18 @@ async def approve_application(app_id: str):
     now_str = datetime.now(timezone.utc).isoformat()
     await db["applications"].update_one(
         {"id": app_id},
-        {"$set": {"status": ClinicStatus.APPROVED, "reviewedAt": now_str, "assignedClinicId": clinic_id}}
+        {"$set": {
+            "status": ClinicStatus.APPROVED,
+            "reviewedAt": now_str,
+            "assignedClinicId": clinic_id,
+            "assignedClinicRefNum": clinic_ref_num
+        }}
     )
 
     application["status"] = ClinicStatus.APPROVED
     application["reviewedAt"] = now_str
     application["assignedClinicId"] = clinic_id
+    application["assignedClinicRefNum"] = clinic_ref_num
     application.pop("_id", None)
     clinic_data.pop("_id", None)
     doctor_data.pop("_id", None)

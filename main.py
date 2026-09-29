@@ -63,4 +63,4 @@ async def websocket_queue_endpoint(websocket: WebSocket, clinic_id: str, date_st
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=settings.port, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=settings.port, reload=(settings.env == "development"))

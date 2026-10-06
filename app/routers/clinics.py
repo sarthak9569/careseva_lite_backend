@@ -122,8 +122,10 @@ async def toggle_clinic_booking(clinic_id: str, payload: ToggleRequest):
         raise HTTPException(status_code=404, detail="Clinic not found")
 
     clinic.pop("_id", None)
-    room = f"clinic_{clinic['clinicId']}"
-    await ws_manager.broadcast_to_room(room, {"type": "booking_toggled", "isBookingActive": payload.state})
+    cid = clinic['clinicId']
+    msg = {"type": "booking_toggled", "clinicId": cid, "isBookingActive": payload.state}
+    await ws_manager.broadcast_to_room(f"clinic_{cid}", msg)
+    await ws_manager.broadcast_to_prefix(f"queue_{cid}", msg)
 
     return {"success": True, "clinic": clinic}
 
@@ -141,8 +143,10 @@ async def toggle_clinic_opd(clinic_id: str, payload: ToggleRequest):
         raise HTTPException(status_code=404, detail="Clinic not found")
 
     clinic.pop("_id", None)
-    room = f"clinic_{clinic['clinicId']}"
-    await ws_manager.broadcast_to_room(room, {"type": "opd_toggled", "isOpdActive": payload.state})
+    cid = clinic['clinicId']
+    msg = {"type": "opd_toggled", "clinicId": cid, "isOpdActive": payload.state}
+    await ws_manager.broadcast_to_room(f"clinic_{cid}", msg)
+    await ws_manager.broadcast_to_prefix(f"queue_{cid}", msg)
 
     return {"success": True, "clinic": clinic}
 

@@ -30,4 +30,9 @@ class ConnectionManager:
                 except Exception as e:
                     print(f"❌ Error broadcasting to socket: {e}")
 
+    async def broadcast_to_prefix(self, prefix: str, message: dict):
+        for room in list(self.active_rooms.keys()):
+            if room.startswith(prefix):
+                await self.broadcast_to_room(room, message)
+
 ws_manager = ConnectionManager()

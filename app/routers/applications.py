@@ -6,6 +6,8 @@ from app.models.clinic import ClinicStatus
 from datetime import datetime, timezone
 import random, string
 
+from app.sockets.manager import ws_manager
+
 router = APIRouter(prefix="/api/applications", tags=["Clinic Applications"])
 
 @router.post("", status_code=status.HTTP_201_CREATED)
@@ -21,6 +23,13 @@ async def submit_application(payload: ClinicApplicationCreate):
 
     await db["applications"].insert_one(data)
     data.pop("_id", None)
+
+    # Broadcast real-time event to Admin Command Center
+    await ws_manager.broadcast_to_room("admin_applications", {
+        "type": "application_created",
+        "application": data
+    })
+
     return {"success": True, "application": data}
 
 @router.get("")
@@ -112,6 +121,12 @@ async def approve_application(app_id: str):
     clinic_data.pop("_id", None)
     doctor_data.pop("_id", None)
 
+    # Broadcast real-time status update to Admin Dashboard
+    await ws_manager.broadcast_to_room("admin_applications", {
+        "type": "application_approved",
+        "application": application
+    })
+
     return {"success": True, "application": application, "clinic": clinic_data, "doctor": doctor_data}
 
 @router.post("/{app_id}/reject")
@@ -131,5 +146,11 @@ async def reject_application(app_id: str, payload: RejectRequest):
     application["reviewedAt"] = now_str
     application["rejectionReason"] = payload.rejectionReason
     application.pop("_id", None)
+
+    # Broadcast real-time status update to Admin Dashboard
+    await ws_manager.broadcast_to_room("admin_applications", {
+        "type": "application_rejected",
+        "application": application
+    })
 
     return {"success": True, "application": application}

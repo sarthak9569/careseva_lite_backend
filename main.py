@@ -49,7 +49,7 @@ app.include_router(clinics.router)
 app.include_router(applications.router)
 app.include_router(queues.router)
 
-# Native Real-Time WebSocket Endpoint
+# Native Real-Time WebSocket Endpoint for Queue/Tokens
 @app.websocket("/ws/queue/{clinic_id}/{date_str}")
 async def websocket_queue_endpoint(websocket: WebSocket, clinic_id: str, date_str: str):
     room = f"queue_{clinic_id}_{date_str}"
@@ -57,6 +57,17 @@ async def websocket_queue_endpoint(websocket: WebSocket, clinic_id: str, date_st
     try:
         while True:
             # Keep connection alive & listen for client ping/messages
+            data = await websocket.receive_text()
+    except WebSocketDisconnect:
+        ws_manager.disconnect(room, websocket)
+
+# Native Real-Time WebSocket Endpoint for Admin Applications
+@app.websocket("/ws/admin")
+async def websocket_admin_endpoint(websocket: WebSocket):
+    room = "admin_applications"
+    await ws_manager.connect(room, websocket)
+    try:
+        while True:
             data = await websocket.receive_text()
     except WebSocketDisconnect:
         ws_manager.disconnect(room, websocket)

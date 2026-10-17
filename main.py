@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.config import settings
@@ -23,6 +23,16 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# API v1 & Health Path Rewrite Compatibility Middleware
+@app.middleware("http")
+async def api_v1_compatibility_middleware(request: Request, call_next):
+    path = request.scope.get("path", "")
+    if path in ("/health", "/api/health", "/api/v1/health", "/api/v1"):
+        request.scope["path"] = "/health"
+    elif path.startswith("/api/v1/"):
+        request.scope["path"] = "/api/" + path[len("/api/v1/"):]
+    return await call_next(request)
+
 # CORS Configuration
 origins = [origin.strip() for origin in settings.cors_origin.split(",")]
 app.add_middleware(
@@ -35,6 +45,8 @@ app.add_middleware(
 
 # Health check route
 @app.get("/health", tags=["Health"])
+@app.get("/api/health", tags=["Health"])
+@app.get("/api/v1/health", tags=["Health"])
 async def health_check():
     return {
         "status": "OK",

@@ -25,4 +25,7 @@ async def close_mongo_connection():
         print("🔌 MongoDB Connection Closed.")
 
 def get_database():
+    if db_instance.db is None:
+        db_instance.client = AsyncIOMotorClient(settings.mongo_uri)
+        db_instance.db = db_instance.client[settings.db_name]
     return db_instance.db
